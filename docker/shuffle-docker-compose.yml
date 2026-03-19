@@ -1,0 +1,88 @@
+services:
+  shuffle-backend:
+    image: ghcr.io/shuffle/shuffle-backend:latest
+    container_name: shuffle-backend
+    ports:
+      - "5001:5001"
+    environment:
+      - BACKEND_HOSTNAME=shuffle-backend
+      - BACKEND_PORT=5001
+      - APP_HOTLOAD_FOLDER=./shuffle-apps
+      - SHUFFLE_APP_HOTLOAD_LOCATION=./shuffle-apps
+      - SHUFFLE_APP_FORCE_UPDATE=false
+      - SHUFFLE_SKIP_PIPELINES=true
+      - SHUFFLE_FILE_LOCATION=./shuffle-files
+      - SHUFFLE_OPENSEARCH_URL=http://shuffle-opensearch:9200
+      - SHUFFLE_OPENSEARCH_SKIPSSL_VERIFY=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - shuffle-apps:/app/generated/apps
+      - shuffle-files:/app/generated/files
+    networks:
+      - shuffle-net
+    restart: unless-stopped
+
+  shuffle-frontend:
+    image: ghcr.io/shuffle/shuffle-frontend:latest
+    container_name: shuffle-frontend
+    ports:
+      - "3001:80"
+      - "3443:443"
+    environment:
+      - BACKEND_HOSTNAME=shuffle-backend
+      - BACKEND_PORT=5001
+    networks:
+      - shuffle-net
+    restart: unless-stopped
+    depends_on:
+      - shuffle-backend
+
+  shuffle-orborus:
+    image: ghcr.io/shuffle/shuffle-orborus:latest
+    container_name: shuffle-orborus
+    environment:
+      - SHUFFLE_WORKER_VERSION=latest
+      - BASE_URL=http://shuffle-backend:5001
+      - ENVIRONMENT_NAME=Shuffle
+      - ORG_ID=Shuffle
+      - DOCKER_API_VERSION=1.44
+      - SHUFFLE_AUTO_IMAGE_DOWNLOAD=false
+      - SHUFFLE_BASE_IMAGE_NAME=shuffle
+      - SHUFFLE_PASS_WORKER_PROXY=false
+      - CLEANUP=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - shuffle-net
+    restart: unless-stopped
+    depends_on:
+      - shuffle-backend
+
+  shuffle-opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: shuffle-opensearch
+    environment:
+      - cluster.name=shuffle-cluster
+      - node.name=shuffle-opensearch
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - shuffle-os-data:/usr/share/opensearch/data
+    networks:
+      - shuffle-net
+    restart: unless-stopped
+
+volumes:
+  shuffle-apps:
+  shuffle-files:
+  shuffle-os-data:
+
+networks:
+  shuffle-net:
+    driver: bridge

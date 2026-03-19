@@ -1,0 +1,13 @@
+services:
+  soc-bridge:
+    build: .
+    container_name: soc-bridge
+    ports:
+      - "5555:5555"
+    networks:
+      - thehive_thehive-net
+    restart: unless-stopped
+
+networks:
+  thehive_thehive-net:
+    external: true
