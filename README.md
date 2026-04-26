@@ -61,5 +61,6 @@ Wazuh · Shuffle · TheHive · Docker · VMware Workstation Pro
 
 ## 🎯 Project Overview
 
-This project is a **fully self-hosted Security Operations Centre** built end-to-end on a Windows 11 workstation using industry-standard open-source tooling. It covers the full offensive-defensive lifecycle - infrastructure deployment, attack simulation, threat detection, automated response, system hardening, and incident management - across **six documented phases over 16 weeks**.
+This project is a **fully self-hosted Security Operations Centre** built end-to-end on a Windows 11 workstation using industry-standard open-source tooling. It covers the full offensive-defensive lifecycle - infrastructure deployment, attack simulation, threat detection, automated response, system hardening, and incident management - across **six documented phases**, currently under active construction.
 
+> ⚠️ **Work in Progress** - New phases and documentation are added continuously as the project evolves.
